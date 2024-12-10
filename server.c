@@ -5,9 +5,9 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<stdint.h>
-#pragma comment(lib, "ws2_32");
+#pragma comment(lib, "ws2_32")
 
-#define BUFSIZE 1024
+#define BUFSIZE 256
 #define PLENGTH 4
 
 void err_quit(const char* msg) {
@@ -21,22 +21,48 @@ void err_quit(const char* msg) {
 
 }
 typedef enum {
-	MSG = 1,
-	CNT = 2,
-	DCNT = 3
-}MsgType;
+	MESSAGE_TYPE_TEXT = 1,
+	MESSAGE_TYPE_BINARY = 2
+} MessageType;
+
+// 프로토콜 구조체 정의
 typedef struct {
-	uint32_t  type;//4
-	uint32_t  bodyLength;//4
-} HeaderPacket;
+	uint32_t messageType;
+	uint32_t bodyLength;
+} ProtocolHeader;
+
 typedef struct {
-	uint32_t  messagelength;//4
-	uint8_t* message;
-} BodyPacket;
+	uint32_t messageLength;
+	uint8_t* messageContent;
+} ProtocolBody;
+
 typedef struct {
-	HeaderPacket header;
-	BodyPacket body;
-} MyPacket;
+	ProtocolHeader header;
+	ProtocolBody body;
+} ProtocolPacket;
+
+// 역직렬화 함수
+ProtocolPacket deserializePacket(const uint8_t* buffer, uint32_t bufferSize) {
+	ProtocolPacket packet;
+
+	// 1. 헤더 복원
+	memcpy(&packet.header, buffer, sizeof(ProtocolHeader));
+	buffer += sizeof(ProtocolHeader);
+
+	// 2. 메시지 길이 복원
+	memcpy(&packet.body.messageLength, buffer, sizeof(uint32_t));
+	buffer += sizeof(uint32_t);
+
+	// 3. 메시지 내용 복원
+	packet.body.messageContent = (uint8_t*)malloc(packet.body.messageLength);
+	if (packet.body.messageContent == NULL) {
+		perror("메모리 할당 실패");
+		exit(EXIT_FAILURE);
+	}
+	memcpy(packet.body.messageContent, buffer, packet.body.messageLength);
+
+	return packet;
+}et;
 
 int main(int argc, char* argv[]) {
 	int retval;
@@ -95,12 +121,21 @@ int main(int argc, char* argv[]) {
 	retval = recv(client_sock, buf, BUFSIZE, 0); // 받은 데이터의 크기를 반환
 	//통신의 주체가 되는 소켓 디스크립터, 받은 메세지를 저장할 버퍼 포인터, 버퍼사이즈, 옵션
 	printf("메세지를 수신하였습니다.\n");
-
+	ProtocolPacket packet = deserializePacket(buf, BUFSIZE);
 	//받는 데이터 출력
 	buf[retval] = '\0'; // 문자열 표기위한 개행문자
 	printf("[TCP/%s:%d] %s\n",
 		inet_ntoa(clientaddr.sin_addr), // 32비트 숫자 > 문자열로 리턴
 		ntohs(clientaddr.sin_port), buf);
+
+	// 데이터 확인
+	printf("Message Type: %u\n", packet.header.messageType);
+	printf("Body Length: %u\n", packet.header.bodyLength);
+	printf("Message Length: %u\n", packet.body.messageLength);
+	printf("Message Content: %s\n", packet.body.messageContent);
+
+	// 메모리 해제
+	free(packet.body.messageContent);
 	//빅엔디안에서 리틀엔디안으로 
 	/*
 	빅 엔디안 : 큰 단위부터 메모리에 적는 방식
