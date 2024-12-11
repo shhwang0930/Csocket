@@ -1,5 +1,5 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
-#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS 
 
 #include <winsock2.h>
 #include<stdio.h>
@@ -8,7 +8,6 @@
 #pragma comment(lib, "ws2_32")
 
 #define BUFSIZE 256
-#define PLENGTH 4
 
 void err_quit(const char* msg) {
 	LPVOID IpMsgBuf;
@@ -18,11 +17,11 @@ void err_quit(const char* msg) {
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		(LPTSTR)&IpMsgBuf, 0, NULL);
 	exit(-1);
-
 }
 typedef enum {
-	MESSAGE_TYPE_TEXT = 1,
-	MESSAGE_TYPE_BINARY = 2
+	MESSAGE = 1,
+	CONNECT = 2,
+	DISCONNECT = 3
 } MessageType;
 
 // 프로토콜 구조체 정의
@@ -72,7 +71,6 @@ int main(int argc, char* argv[]) {
 	//윈도우 소켓 초기화 정보를 가지고 있는 구조체
 	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) // 윈도우소켓 시작하기
 		return -1;
-	//MessageBox(NULL, "윈속 초기화 성공", "알림", MB_OK);
 
 	//socket() 소켓 생성
 	/*
@@ -117,33 +115,48 @@ int main(int argc, char* argv[]) {
 	// socket함수 호출시 반환된 소켓 식별 번호, accept 성공시 연결된 클라이언트의 주소와 포트가 저장될 구조체, 구조체의 크기
 	printf("요청을 받았습니다.\n");
 
-	//recv() 데이터 수신
-	retval = recv(client_sock, buf, BUFSIZE, 0); // 받은 데이터의 크기를 반환
-	//통신의 주체가 되는 소켓 디스크립터, 받은 메세지를 저장할 버퍼 포인터, 버퍼사이즈, 옵션
-	printf("메세지를 수신하였습니다.\n");
-	ProtocolPacket packet = deserializePacket(buf, BUFSIZE);
-	//받는 데이터 출력
-	buf[retval] = '\0'; // 문자열 표기위한 개행문자
-	printf("[TCP/%s:%d] %s\n",
-		inet_ntoa(clientaddr.sin_addr), // 32비트 숫자 > 문자열로 리턴
-		ntohs(clientaddr.sin_port), buf);
+	while (1) {
 
-	// 데이터 확인
-	printf("Message Type: %u\n", packet.header.messageType);
-	printf("Body Length: %u\n", packet.header.bodyLength);
-	printf("Message Length: %u\n", packet.body.messageLength);
-	printf("Message Content: %s\n", packet.body.messageContent);
+		//recv() 데이터 수신
+		retval = recv(client_sock, buf, BUFSIZE, 0); // 받은 데이터의 크기를 반환
+		//통신의 주체가 되는 소켓 디스크립터, 받은 메세지를 저장할 버퍼 포인터, 버퍼사이즈, 옵션
+		printf("메세지를 수신하였습니다.\n");
+		ProtocolPacket packet = deserializePacket(buf, BUFSIZE);
+		//받는 데이터 출력
+		buf[retval] = '\0'; // 문자열 표기위한 개행문자
+		printf("[TCP/%s:%d]\n",
+			inet_ntoa(clientaddr.sin_addr), // 32비트 숫자 > 문자열로 리턴
+			ntohs(clientaddr.sin_port));
 
-	// 메모리 해제
-	free(packet.body.messageContent);
-	//빅엔디안에서 리틀엔디안으로 
-	/*
-	빅 엔디안 : 큰 단위부터 메모리에 적는 방식
-	리틀 엔디안 : 작은 단위부터 메모리에 적는 방식
-	*/
+		// 데이터 확인
+		if (packet.header.messageType == 1) {
+			printf("msg notice\n");
+			printf("Message Type: %u\n", packet.header.messageType);
+			printf("Body Length: %u\n", packet.header.bodyLength);
+			printf("Message Length: %u\n", packet.body.messageLength);
+			printf("Message Content: %s\n", packet.body.messageContent);
+		}
+		else if (packet.header.messageType == 2) {
+			printf("connect\n");
+			printf("Message Type: %u\n", packet.header.messageType);
+			printf("Body Length: %u\n", packet.header.bodyLength);
+			printf("Message Length: %u\n", packet.body.messageLength);
+			printf("Message Content: %s\n", packet.body.messageContent);
+		}
+		else if (packet.header.messageType == 3) {
+			printf("disconnect\n");
+			printf("Message Type: %u\n", packet.header.messageType);
+			printf("Body Length: %u\n", packet.header.bodyLength);
+			printf("Message Length: %u\n", packet.body.messageLength);
+			printf("Message Content: %s\n", packet.body.messageContent);
+			break;
+		}
+
+	}
+
 	//closesocket
 	closesocket(listen_sock);
-
+	closesocket(client_sock);
 	//원속 종료
 	WSACleanup();
 	return 0;
