@@ -1,13 +1,5 @@
 ﻿  protocol.c
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.29.30133\include\cstdint(21,1): error C2061: 구문 오류: 식별자 'std'
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.29.30133\include\cstdint(21,1): error C2059: 구문 오류: ';'
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.29.30133\include\cstdint(21,1): error C2449: 파일 범위에 '{'가 있습니다. 함수 헤더가 없는 것 같습니다.
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.29.30133\include\cstdint(89,1): error C2059: 구문 오류: '}'
-C:\Users\ba\source\repos\myProtocol\myProtocol\protocol.h(4,14): warning C4116: 괄호 안에 명명되지 않은 형식 정의가 있습니다.
-C:\Users\ba\source\repos\myProtocol\myProtocol\protocol.c(10,8): warning C4013: 'memcpy'이(가) 정의되지 않았습니다. extern은 int형을 반환하는 것으로 간주합니다.
+C:\Users\ba\source\repos\myProtocol\myProtocol\protocol.c(8,8): warning C4013: 'memcpy'이(가) 정의되지 않았습니다. extern은 int형을 반환하는 것으로 간주합니다.
   server.c
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.29.30133\include\cstdint(21,1): error C2061: 구문 오류: 식별자 'std'
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.29.30133\include\cstdint(21,1): error C2059: 구문 오류: ';'
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.29.30133\include\cstdint(21,1): error C2449: 파일 범위에 '{'가 있습니다. 함수 헤더가 없는 것 같습니다.
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.29.30133\include\cstdint(89,1): error C2059: 구문 오류: '}'
   코드를 생성하고 있습니다...
+  myProtocol.vcxproj -> C:\Users\ba\source\repos\myProtocol\Debug\myProtocol.exe

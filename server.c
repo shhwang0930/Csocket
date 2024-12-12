@@ -1,71 +1,22 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
-#define _CRT_SECURE_NO_WARNINGS 
+#define _CRT_SECURE_NO_WARNINGS//fopen > 사용
 
 #include <winsock2.h>
 #include<stdio.h>
 #include<stdlib.h>
 #include<stdint.h>
+#include"protocol.h"
 #pragma comment(lib, "ws2_32")
 
-#define BUFSIZE 256
+#define BUFSIZE 4048
 
 void err_quit(const char* msg) {
-	LPVOID IpMsgBuf;
-	FormatMessage(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-		NULL, WSAGetLastError(),
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPTSTR)&IpMsgBuf, 0, NULL);
-	exit(-1);
+	fprintf(stderr, "Error: %s\n", msg); // 에러 메시지 출력
+	exit(EXIT_FAILURE);                 // 프로그램 종료
 }
-typedef enum {
-	MESSAGE = 1,
-	CONNECT = 2,
-	DISCONNECT = 3
-} MessageType;
-
-// 프로토콜 구조체 정의
-typedef struct {
-	uint32_t messageType;
-	uint32_t bodyLength;
-} ProtocolHeader;
-
-typedef struct {
-	uint32_t messageLength;
-	uint8_t* messageContent;
-} ProtocolBody;
-
-typedef struct {
-	ProtocolHeader header;
-	ProtocolBody body;
-} ProtocolPacket;
-
-// 역직렬화 함수
-ProtocolPacket deserializePacket(const uint8_t* buffer, uint32_t bufferSize) {
-	ProtocolPacket packet;
-
-	// 1. 헤더 복원
-	memcpy(&packet.header, buffer, sizeof(ProtocolHeader));
-	buffer += sizeof(ProtocolHeader);
-
-	// 2. 메시지 길이 복원
-	memcpy(&packet.body.messageLength, buffer, sizeof(uint32_t));
-	buffer += sizeof(uint32_t);
-
-	// 3. 메시지 내용 복원
-	packet.body.messageContent = (uint8_t*)malloc(packet.body.messageLength);
-	if (packet.body.messageContent == NULL) {
-		perror("메모리 할당 실패");
-		exit(EXIT_FAILURE);
-	}
-	memcpy(packet.body.messageContent, buffer, packet.body.messageLength);
-
-	return packet;
-}et;
 
 int main(int argc, char* argv[]) {
 	int retval;
-
 	//윈속초기화 
 	WSADATA wsa;
 	//윈도우 소켓 초기화 정보를 가지고 있는 구조체
@@ -108,6 +59,7 @@ int main(int argc, char* argv[]) {
 	SOCKADDR_IN clientaddr;
 	int addrlen;
 	char buf[BUFSIZE + 1];
+	FILE* file = NULL;
 
 	//accept() 연결 요청 수락
 	addrlen = sizeof(clientaddr);
@@ -123,7 +75,7 @@ int main(int argc, char* argv[]) {
 		printf("메세지를 수신하였습니다.\n");
 		ProtocolPacket packet = deserializePacket(buf, BUFSIZE);
 		//받는 데이터 출력
-		buf[retval] = '\0'; // 문자열 표기위한 개행문자
+		//buf[retval] = '\0'; // 문자열 표기위한 개행문자
 		printf("[TCP/%s:%d]\n",
 			inet_ntoa(clientaddr.sin_addr), // 32비트 숫자 > 문자열로 리턴
 			ntohs(clientaddr.sin_port));
@@ -151,10 +103,32 @@ int main(int argc, char* argv[]) {
 			printf("Message Content: %s\n", packet.body.messageContent);
 			break;
 		}
+		else if (packet.header.messageType == 4) {
+			printf("Message Type: %u\n", packet.header.messageType);
+			printf("file name length : %u\n", packet.file.filenameLength);
+			printf("file name : %s\n", packet.file.fileName);
+			printf("file length : %u\n", packet.file.fileLength);
+
+			FILE* newFile = fopen(packet.file.fileName, "wb");
+			if (!newFile) {
+				perror("fopen failed");
+				return 1;
+			}
+
+			size_t written = fwrite(packet.file.myFile, 1, packet.file.fileLength, newFile);
+			if (written != packet.file.fileLength) {
+				perror("fwrite failed");
+				fclose(newFile);
+				return 1;
+			}
+			fclose(newFile);
+			printf("File transport success!\n");
+		}
 
 	}
 
 	//closesocket
+	//fclose(file);
 	closesocket(listen_sock);
 	closesocket(client_sock);
 	//원속 종료
