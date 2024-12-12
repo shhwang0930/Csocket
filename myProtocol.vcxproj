@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="cl.c" />
     <ClCompile Include="protocol.c" />
     <ClCompile Include="server.c" />
   </ItemGroup>

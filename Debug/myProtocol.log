@@ -1,5 +1,3 @@
 ﻿  protocol.c
 C:\Users\ba\source\repos\myProtocol\myProtocol\protocol.c(8,8): warning C4013: 'memcpy'이(가) 정의되지 않았습니다. extern은 int형을 반환하는 것으로 간주합니다.
-  server.c
-  코드를 생성하고 있습니다...
   myProtocol.vcxproj -> C:\Users\ba\source\repos\myProtocol\Debug\myProtocol.exe

@@ -21,6 +21,9 @@
     <ClCompile Include="protocol.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="cl.c">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="protocol.h">

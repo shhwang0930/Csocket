@@ -11,8 +11,8 @@ ProtocolPacket deserializePacket(const uint8_t* buffer, uint32_t bufferSize) {
 	if (packet.header.messageType != 4) {
 		// 2. 메시지 길이 복원
 		memcpy(&packet.body.messageLength, buffer, sizeof(uint32_t));
+		//복사 받을 내용, 복사할 내용, 복사 크기
 		buffer += sizeof(uint32_t);
-
 		// 3. 메시지 내용 복원
 		packet.body.messageContent = (uint8_t*)malloc(packet.body.messageLength);
 		if (packet.body.messageContent == NULL) {
@@ -43,6 +43,5 @@ ProtocolPacket deserializePacket(const uint8_t* buffer, uint32_t bufferSize) {
 		}
 		memcpy(packet.file.myFile, buffer, packet.file.fileLength);
 	}
-
 	return packet;
 }et;

@@ -10,7 +10,7 @@ typedef enum {
 } MessageType;
 
 // 프로토콜 구조체 정의
-//uintx_t > 문자보다 숫자를 담을 때 사용한다고 함 > 바이너리코드로 보내려고함
+//uintx_t > bit수 고정 > 이식성 증가
 typedef struct {
 	uint32_t messageType;
 	uint32_t bodyLength;
