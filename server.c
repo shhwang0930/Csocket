@@ -16,6 +16,8 @@ void err_quit(const char* msg) {
 }
 
 int main(int argc, char* argv[]) {
+	// Set console code page to UTF-8 (65001). #include <windows.h> 필요
+	// Set locale to Korean (South Korea)
 	int retval;
 	//윈속초기화 
 	WSADATA wsa;
@@ -74,10 +76,10 @@ int main(int argc, char* argv[]) {
 		retval = recv(client_sock, buf, BUFSIZE, 0); // 받은 데이터의 크기를 반환
 		
 		printf("메세지를 수신하였습니다.\n");
-		for (int i = 0; i < retval; i++) {
-			printf("%02X ", buf[i]);
-		}
-		printf("\n");
+		//for (int i = 0; i < retval; i++) {
+		//	printf("%02X ", buf[i]);
+		//}
+		//printf("\n");
 
 		ProtocolPacket packet = deserializePacket(buf, BUFSIZE);
 		//받는 데이터 출력
@@ -92,6 +94,7 @@ int main(int argc, char* argv[]) {
 			printf("Body Length: %u\n", packet.header.bodyLength);
 			printf("Message Length: %u\n", packet.body.messageLength);
 			printf("Message Content: %s\n", packet.body.messageContent);
+			free(packet.body.messageContent);
 		}
 		else if (packet.header.messageType == 2) {
 			printf("connect\n");
@@ -99,6 +102,7 @@ int main(int argc, char* argv[]) {
 			printf("Body Length: %u\n", packet.header.bodyLength);
 			printf("Message Length: %u\n", packet.body.messageLength);
 			printf("Message Content: %s\n", packet.body.messageContent);
+			free(packet.body.messageContent);
 		}
 		else if (packet.header.messageType == 3) {
 			printf("disconnect\n");
@@ -106,6 +110,7 @@ int main(int argc, char* argv[]) {
 			printf("Body Length: %u\n", packet.header.bodyLength);
 			printf("Message Length: %u\n", packet.body.messageLength);
 			printf("Message Content: %s\n", packet.body.messageContent);
+			free(packet.body.messageContent);
 			break;
 		}
 		else if (packet.header.messageType == 4) {
@@ -128,6 +133,8 @@ int main(int argc, char* argv[]) {
 			}
 			fclose(newFile);
 			printf("File transport success!\n");
+			free(packet.file.fileName);
+			free(packet.file.myFile);
 		}
 
 	}
