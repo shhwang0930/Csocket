@@ -1,3 +1,5 @@
-﻿  server.c
-C:\Users\ba\source\repos\myProtocol\myProtocol\server.c(18,6): warning C4101: 'retval' :참조되지 않은 지역 변수입니다.
+﻿  protocol.c
+C:\Users\ba\source\repos\myProtocol\myProtocol\protocol.c(6,11): warning C4013: 'memcpy'이(가) 정의되지 않았습니다. extern은 int형을 반환하는 것으로 간주합니다.
+  server.c
+  코드를 생성하고 있습니다...
   myProtocol.vcxproj -> C:\Users\ba\source\repos\myProtocol\Debug\myProtocol.exe

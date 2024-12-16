@@ -15,7 +15,7 @@ void err_quit(const char* msg) {
 int main(int argc, char* argv[]) {
 	// Set console code page to UTF-8 (65001). #include <windows.h> 필요
 	// Set locale to Korean (South Korea)
-	int retval;
+	// 
 	//윈속초기화 
 	WSADATA wsa;
 	//윈도우 소켓 초기화 정보를 가지고 있는 구조체 
@@ -80,11 +80,10 @@ int main(int argc, char* argv[]) {
 		ProtocolHeader header = headDeserialize(headbuf, HEADBUF);
 		ProtocolBody body = { 0 };
 		ProtocolFile file = { 0 };
-		printf("header packet type : %u !!!!\n", header.messageType);
-		printf("body length : %u !!!!\n", header.bodyLength);
+		printf("header packet type : %u\n", header.messageType);
+
 		int bodylength = header.bodyLength;
 		int8_t* buf = (int8_t*)malloc(bodylength);
-
 		int bytesReceived = 0;
 		int remaining = header.bodyLength;
 		int8_t* current = buf;

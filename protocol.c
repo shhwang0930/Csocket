@@ -21,8 +21,6 @@ ProtocolBody bodyDeserialize(const uint8_t* buffer, uint32_t bufferSize) {
     buffer += sizeof(uint32_t);
     bufferSize -= sizeof(uint32_t);
 
-    printf("message length : %u!!!!!!\n", body.messageLength);
-
     // 메시지 길이 유효성 검증
     if (bufferSize < body.messageLength) {
         fprintf(stderr, "메시지 길이가 유효하지 않습니다. (body.messageLength: %u, bufferSize: %u)\n",
