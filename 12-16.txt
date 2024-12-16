@@ -1,0 +1,31 @@
+1. 커맨드 입력
+2. 바디 입력
+3. 헤더 전송
+4. 바디 전송
+
+uint8_t* buffer = malloc(size);
+    if (buffer == NULL) {
+        perror("메모리 할당 실패");
+        return NULL;
+    }
+uint8_t* current = buffer; // 현재 위치를 추적하는 포인터
+
+다음 처럼 buffer의 위치를 바꾸면서 쓸때는 current로 위치 변경해줄 포인터 하나 추가하고
+free로 나중에 buffer 시작주소 찾을 수 있도록 해야함
+
+동영상 파일을 보내려고 함
+> 다 안보내짐 > ftp의 mtu에 의해 막힘
+mtu : 최대 전송 단위, tcp/ip 네트워크 등과 같은 패킷 또는 프레임 기반의 네트워크에서 전송될 수 있는 최대 크기의 패킷
+
+윈도우 > netsh interface ip show interface
+리눅스 > ifconfig
+로 확인가능
+
+윈도우 > 1420
+리눅스 > 1500
+쪼개야 하는데
+while(카운트 파일 끝 비교){
+	0~1024 전송
+	카운트 += 1024
+	버퍼 위치도 옮겨줌
+}

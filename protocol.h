@@ -28,11 +28,10 @@ typedef struct {
 	uint8_t* myFile;
 }ProtocolFile;
 
-typedef struct {
-	ProtocolHeader header;
-	ProtocolBody body;
-	ProtocolFile file;
-} ProtocolPacket;
 
 
-ProtocolPacket deserializePacket(const uint8_t* buffer, uint32_t bufferSize);
+ProtocolHeader headDeserialize(const uint8_t* buffer, uint32_t bufferSize);
+ProtocolBody bodyDeserialize(const uint8_t* buffer, uint32_t bufferSize);
+ProtocolFile fileDeserialize(const uint8_t* buffer, uint32_t bufferSize);
+void printmsgPacket(ProtocolBody body);
+void printfilePacket(ProtocolFile file);

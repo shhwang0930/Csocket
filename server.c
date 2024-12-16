@@ -1,14 +1,11 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
-#define _CRT_SECURE_NO_WARNINGS//fopen > 사용
 
+#include "file.h"
 #include <winsock2.h>
-#include<stdio.h>
-#include<stdlib.h>
-#include<stdint.h>
-#include"protocol.h"
 #pragma comment(lib, "ws2_32")
 
 #define BUFSIZE 4048
+#define HEADBUF 8
 
 void err_quit(const char* msg) {
 	fprintf(stderr, "Error: %s\n", msg); // 에러 메시지 출력
@@ -60,8 +57,7 @@ int main(int argc, char* argv[]) {
 	SOCKET client_sock;
 	SOCKADDR_IN clientaddr;
 	int addrlen;
-	char buf[BUFSIZE + 1];
-	FILE* file = NULL;
+	char headbuf[HEADBUF];
 
 	//accept() 연결 요청 수락 
 	addrlen = sizeof(clientaddr);
@@ -71,71 +67,89 @@ int main(int argc, char* argv[]) {
 	printf("요청을 받았습니다.\n");
 
 	while (1) {
-
-		//recv() 데이터 수신 윈속에서는 read, write 대신 recv send 사용
-		retval = recv(client_sock, buf, BUFSIZE, 0); // 받은 데이터의 크기를 반환
-		
-		printf("메세지를 수신하였습니다.\n");
-		//for (int i = 0; i < retval; i++) {
-		//	printf("%02X ", buf[i]);
-		//}
-		//printf("\n");
-
-		ProtocolPacket packet = deserializePacket(buf, BUFSIZE);
-		//받는 데이터 출력
-		printf("[TCP/%s:%d]\n",
-			inet_ntoa(clientaddr.sin_addr), // 32비트 숫자 > 문자열로 리턴
-			ntohs(clientaddr.sin_port));
-
-		// 데이터 확인
-		if (packet.header.messageType == 1) {
-			printf("msg notice\n");
-			printf("Message Type: %u\n", packet.header.messageType);
-			printf("Body Length: %u\n", packet.header.bodyLength);
-			printf("Message Length: %u\n", packet.body.messageLength);
-			printf("Message Content: %s\n", packet.body.messageContent);
-			free(packet.body.messageContent);
-		}
-		else if (packet.header.messageType == 2) {
-			printf("connect\n");
-			printf("Message Type: %u\n", packet.header.messageType);
-			printf("Body Length: %u\n", packet.header.bodyLength);
-			printf("Message Length: %u\n", packet.body.messageLength);
-			printf("Message Content: %s\n", packet.body.messageContent);
-			free(packet.body.messageContent);
-		}
-		else if (packet.header.messageType == 3) {
-			printf("disconnect\n");
-			printf("Message Type: %u\n", packet.header.messageType);
-			printf("Body Length: %u\n", packet.header.bodyLength);
-			printf("Message Length: %u\n", packet.body.messageLength);
-			printf("Message Content: %s\n", packet.body.messageContent);
-			free(packet.body.messageContent);
+		int headre = 0;
+		int bodyre = 0;
+		//header 수신
+		headre = recv(client_sock, headbuf, HEADBUF, 0);
+		if (headre == SOCKET_ERROR) {
+			printf("헤더패킷을 수신XXXXX.\n");
 			break;
 		}
-		else if (packet.header.messageType == 4) {
-			printf("Message Type: %u\n", packet.header.messageType);
-			printf("file name length : %u\n", packet.file.filenameLength);
-			printf("file name : %s\n", packet.file.fileName);
-			printf("file length : %u\n", packet.file.fileLength);
+		printf("헤더패킷을 수신하였습니다.\n");
+		printf("\n");
+		ProtocolHeader header = headDeserialize(headbuf, HEADBUF);
+		ProtocolBody body = { 0 };
+		ProtocolFile file = { 0 };
+		printf("header packet type : %u !!!!\n", header.messageType);
+		printf("body length : %u !!!!\n", header.bodyLength);
+		int bodylength = header.bodyLength;
+		int8_t* buf = (int8_t*)malloc(bodylength);
 
-			FILE* newFile = fopen(packet.file.fileName, "wb");
-			if (!newFile) {
-				perror("fopen failed");
-				return 1;
-			}
+		int bytesReceived = 0;
+		int remaining = header.bodyLength;
+		int8_t* current = buf;
 
-			size_t written = fwrite(packet.file.myFile, 1, packet.file.fileLength, newFile);
-			if (written != packet.file.fileLength) {
-				perror("fwrite failed");
-				fclose(newFile);
-				return 1;
+		if (header.messageType == 4 && bodylength > 1024) {
+			while (remaining > 0) {
+				int size = recv(client_sock, current, remaining, 0);
+				if (size < 0) {
+					perror("데이터 수신 실패");
+					free(buf);
+					exit(EXIT_FAILURE);
+				}
+				else if (size == 0) {
+					printf("서버 연결이 종료되었습니다.\n");
+					break;
+				}
+
+				bytesReceived += size; 
+				current += size;
+				remaining -= size;
 			}
+			printf("total file byte : %d \n", bytesReceived);
+		}
+		else {
+			recv(client_sock, buf, bodylength, 0);
+		}
+
+		printf("\n");
+
+
+		if (bodyre == SOCKET_ERROR) {
+			printf("바디패킷을 수신XXXXX.\n");
+			break;
+		}
+		printf("바디패킷을 수신하였습니다.\n");
+
+		printf("[TCP/%s:%d]\n",
+			inet_ntoa(clientaddr.sin_addr),
+			ntohs(clientaddr.sin_port));
+
+		if (header.messageType == 1) {
+			body = bodyDeserialize(buf, bodylength);
+			printmsgPacket(body);
+		}
+		else if (header.messageType == 2) {
+			body = bodyDeserialize(buf, bodylength);
+			printmsgPacket(body);
+		}
+		else if (header.messageType == 3) {
+			body = bodyDeserialize(buf, bodylength);
+			printmsgPacket(body);
+			break;
+		}
+		else if (header.messageType == 4) {
+			file = fileDeserialize(buf, bodylength);
+			printfilePacket(file);
+			FILE* newFile = fileOpen(file);
+			fileWrite(file, newFile);
 			fclose(newFile);
 			printf("File transport success!\n");
-			free(packet.file.fileName);
-			free(packet.file.myFile);
 		}
+		free(body.messageContent);
+		free(file.fileName);
+		free(file.myFile);
+		free(buf);
 
 	}
 	
