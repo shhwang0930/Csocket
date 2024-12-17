@@ -1,6 +1,12 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<stdint.h>
+#include <winsock2.h>
+#include<windows.h>
+#include<time.h>
+#include<fileapi.h>
+#pragma comment(lib, "ws2_32")
+
 
 typedef enum {
 	MESSAGE = 1,
@@ -26,6 +32,8 @@ typedef struct {
 	uint8_t* fileName;
 	uint32_t fileLength;
 	uint8_t* myFile;
+	time_t accessTime;
+	time_t modifyTime;
 }ProtocolFile;
 
 

@@ -1,10 +1,6 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 #include "file.h"
-#include <winsock2.h>
-#pragma comment(lib, "ws2_32")
-
-#define BUFSIZE 4048
 #define HEADBUF 8
 
 void err_quit(const char* msg) {
@@ -81,6 +77,7 @@ int main(int argc, char* argv[]) {
 		ProtocolBody body = { 0 };
 		ProtocolFile file = { 0 };
 		printf("header packet type : %u\n", header.messageType);
+		printf("header msg Length : %u\n", header.bodyLength);
 
 		int bodylength = header.bodyLength;
 		int8_t* buf = (int8_t*)malloc(bodylength);
@@ -143,6 +140,10 @@ int main(int argc, char* argv[]) {
 			FILE* newFile = fileOpen(file);
 			fileWrite(file, newFile);
 			fclose(newFile);
+			FILETIME act, mdt;
+			unix_time_to_filetime(file.accessTime, &act);
+			unix_time_to_filetime(file.modifyTime, &mdt);
+			updateMetaData(act, mdt, file.fileName);
 			printf("File transport success!\n");
 		}
 		free(body.messageContent);

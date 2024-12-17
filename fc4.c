@@ -5,8 +5,11 @@
 #include<arpa/inet.h>
 #include<sys/types.h>
 #include<sys/socket.h>
+#include<errno.h>
+#include<time.h>
+#include<sys/stat.h>
 
-#define BUFF_SIZE 1024
+#define BUFF_SIZE 4048
 
 typedef enum {
     MESSAGE = 1,
@@ -31,6 +34,8 @@ typedef struct {
     uint8_t* fileName;
     uint32_t fileLength;
     uint8_t* myFile;
+    time_t accessTime;
+    time_t modifyTime;
 }ProtocolFile;
 
 
@@ -74,6 +79,12 @@ uint8_t* fileSerialize(ProtocolFile filePacket,int size) {
     current += sizeof(uint32_t);
 
     memcpy(current, filePacket.myFile, filePacket.fileLength);
+    current += filePacket.fileLength;
+
+    memcpy(current, filePacket.accessTime, sizeof(time_t));
+    current += sizeof(time_t);
+
+    memcpy(current, filePacket.modifyTime, sizeof(time_t));
 
     return buffer;
 }
@@ -93,7 +104,7 @@ int main(int argc, char** argv) {
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(4000);
-    server_addr.sin_addr.s_addr = inet_addr("192.183.2.19");
+    server_addr.sin_addr.s_addr = inet_addr("192.168.10.41");
 
 
     if (-1 == connect(client_socket, (struct sockaddr*)&server_addr, sizeof(server_addr))) {
@@ -105,6 +116,7 @@ int main(int argc, char** argv) {
         uint8_t* headerBuffer = NULL;
         uint8_t* msgBuffer = NULL;
         uint8_t* fileBuffer = NULL;
+	struct stat sb;
         printf("명령 입력 : ");
         scanf("%d", &command);
 	getchar();
@@ -187,8 +199,8 @@ int main(int argc, char** argv) {
             uint8_t* fileData = (uint8_t*)malloc(fsize);
             fread(fileData, 1, fsize, file);
             filePacket.myFile = fileData;
-            header.bodyLength = sizeof(uint32_t) + filePacket.filenameLength + sizeof(uint32_t) + fsize;
-
+            header.bodyLength = sizeof(uint32_t) + filePacket.filenameLength + sizeof(uint32_t) + fsize + sizeof(time_t) + sizeof(time_t);
+	    printf("------body length ------ : %u\n", header.bodyLength);
             headerBuffer = headSerialize(header);
             write(client_socket, headerBuffer, sizeof(ProtocolHeader));
             printf("------send header packet------\n");
@@ -197,6 +209,15 @@ int main(int argc, char** argv) {
             printf("file name length : %u\n", filePacket.filenameLength);
             printf("file length : %u\n", filePacket.fileLength);
             fclose(file);
+
+	    if(stat(fileNm, &sb) == -1){
+                perror("stat");
+                return 1;
+            }
+	    filePacket.accessTime = &sb.st_atime;
+	    filePacket.modifyTime = &sb.st_mtime;
+	    printf("a time : %s\n", ctime(&sb.st_atime));
+	    printf("m time : %s\n", ctime(&sb.st_mtime));
         }
         // 직렬화
         uint32_t bufferSize = header.bodyLength;
