@@ -11,7 +11,7 @@ void err_quit(const char* msg) {
 }
 
 int main(int argc, char* argv[]) {
-
+	//testtest
 	WSADATA wsa = {0};
 	SOCKET listen_sock = NULL;
 	SOCKADDR_IN serveraddr = { 0 };
