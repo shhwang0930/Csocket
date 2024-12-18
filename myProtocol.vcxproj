@@ -139,14 +139,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="cl.c" />
     <ClCompile Include="file.c" />
     <ClCompile Include="protocol.c" />
     <ClCompile Include="server.c" />
+    <ClCompile Include="winSocket.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="file.h" />
     <ClInclude Include="protocol.h" />
+    <ClInclude Include="winSocket.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

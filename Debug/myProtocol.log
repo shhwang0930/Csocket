@@ -1,7 +1,5 @@
-﻿  file.c
-C:\Users\ba\source\repos\myProtocol\myProtocol\file.c(17,17): warning C4098: 'fileWrite': 'void' 함수에서 값을 반환하고 있습니다.
-C:\Users\ba\source\repos\myProtocol\myProtocol\file.c(40,11): warning C4098: 'updateMetaData': 'void' 함수에서 값을 반환하고 있습니다.
-C:\Users\ba\source\repos\myProtocol\myProtocol\file.c(46,11): warning C4098: 'updateMetaData': 'void' 함수에서 값을 반환하고 있습니다.
-  server.c
-  코드를 생성하고 있습니다...
+﻿  server.c
+C:\Users\ba\source\repos\myProtocol\myProtocol\server.c(16,1): warning C4047: '초기화 중': 'SOCKET'의 간접 참조 수준이 'void *'과(와) 다릅니다.
+C:\Users\ba\source\repos\myProtocol\myProtocol\server.c(18,1): warning C4047: '초기화 중': 'SOCKET'의 간접 참조 수준이 'void *'과(와) 다릅니다.
+C:\Users\ba\source\repos\myProtocol\myProtocol\server.c(20,1): warning C4047: '초기화 중': 'int'의 간접 참조 수준이 'void *'과(와) 다릅니다.
   myProtocol.vcxproj -> C:\Users\ba\source\repos\myProtocol\Debug\myProtocol.exe

@@ -1,7 +1,7 @@
 #include "file.h"
 
-FILE* fileOpen(ProtocolFile file) {
-    FILE* newFile = fopen(file.fileName, "wb");
+FILE* fileOpen(uint8_t* fileNm) {
+    FILE* newFile = fopen(fileNm, "wb");
     if (!newFile) {
         perror("fopen failed");
         return NULL;
@@ -9,9 +9,9 @@ FILE* fileOpen(ProtocolFile file) {
     return newFile;
 }
 
-void fileWrite(ProtocolFile file, FILE* newFile) {
-    size_t written = fwrite(file.myFile, 1, file.fileLength, newFile);
-    if (written != file.fileLength) {
+void fileWrite(uint8_t* file, uint32_t fileLength, FILE* newFile) {
+    size_t written = fwrite(file, 1, fileLength, newFile);
+    if (written != fileLength) {
         perror("fwrite failed");
         fclose(newFile);
         return 1;
